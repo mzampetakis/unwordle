@@ -1,8 +1,8 @@
 # Unrordle
 
-Unrordle is a try to solve the `wordle` puzzle. Wordle is a game where use has to guess the WORDLE (a word) in 6 tries.
-Each guess must be a valid 5-letter word. After each guess, the color of the tiles will change to show how close your
-guess was to the word.
+Unrordle is a toy app that tries to solve the `wordle` puzzle. Wordle is a game where use has to guess the WORDLE (a
+word) in 6 tries. Each guess must be a valid 5-letter word. After each guess, the color of the tiles will change to show
+how close your guess was to the word.
 
 ## Prerequisites
 
@@ -93,8 +93,34 @@ Try #3: 	dodge | Possibility: 1/125 | Score: 20
 
 # Unwordle Internals
 
-## Estimated a good opener
+## Estimatin a good opener
+
+Unworlde is able to estimate a good opener word (the first proposed word) instead os using a random one from the given
+dictionary. The process of estimating a good opener goes as follows:
+
+* the occurrence of each letter is calculated based on the given dictionary
+* using the most frequent letters we search for a word that contains each one of them
+
+This way the opener word will give more value even from the first try!
 
 ## Eliminating candidates
 
+After each proposed word, unwordle requests for the user response based on the wordle result. This input contains
+valuable information for each one of the letters of the proposed word. So
+
+* for each letter that does not exist in the wordle (black), unwordle eliminates all dictionary's words that contain
+  this letter
+* for each letter that exists on the wordle but is placed on wrong place (yellow), unwordle eliminates all dictionary's
+  words that contain this letter at ths specific place
+
+Doing this process for each input result given, unworlde manages to exclude as many words as possible from the given
+dictionary.
+
 ## Proposing a good solution
+
+For each try, unwordle tries to propose the most promising word chosen from the words that have not been eliminated from
+the input dictionary. For each word within the dictionary, a score is calculated before proposing a new word. The score
+is calculated using only the given responses.
+
+* score is incremented by 1 for each letter that exists both in the word and the wordle
+* score is incremented by 5 for each letter that exists both in the word and the wordle in the exact place
