@@ -64,7 +64,11 @@ func init() {
 	}
 }
 
+// lettersRules contains a map of all 26 letters and for each letter rules about their occurrence are stored
 var lettersRules map[string]string
+
+// validWords holds a map of words of the given dictionary.
+// When a word is not possible to be chosen it is being deleted.
 var validWords map[string]bool
 
 func main() {
@@ -118,12 +122,17 @@ func main() {
 			fmt.Println("Hooray! :-)")
 			os.Exit(0)
 		}
-		currentWord, currentWordScore = findGoodWord()
-		if len(validWords) == 1 {
+		removeWords()
+		if len(validWords) == 0 {
+			fmt.Println("No solution found with the given criteria.")
+			fmt.Println("Sorry. :-(")
+			os.Exit(0)
+		} else if len(validWords) == 1 {
 			fmt.Println("Found Solution: \t" + currentWord)
 			fmt.Println("Hooray! :-)")
 			os.Exit(0)
 		}
+		currentWord, currentWordScore = findGoodWord()
 	}
 	fmt.Println("No solution found.")
 	fmt.Println("Sorry. :-(")
@@ -136,26 +145,35 @@ func readResponse() string {
 	return response
 }
 
-func findGoodWord() (string, int) {
-	goodFit := ""
-	goodFitScore := -1
-	//fmt.Printf("%+v\n", lettersRules)
-	for validWord := range validWords {
-		currentScore := 0
-		for pos, wordLetter := range validWord {
+// removeWords checks all the words within the validWords map and remove impossible words base on the rules stored
+// in the lettersRules map
+func removeWords() {
+	for wordToCheck := range validWords {
+		for pos, wordLetter := range wordToCheck {
 			// Exclude words that contain letters that don't exist (black)
 			if lettersRules[string(wordLetter)] == string(NotExists) {
-				delete(validWords, validWord)
+				delete(validWords, wordToCheck)
 				break
 			}
 			// Exclude words that contain letters that are in wrong place (yellow)
 			if strings.Contains(lettersRules[string(wordLetter)], string(Exists)) {
 				position := lettersRules[string(wordLetter)][1:]
 				if position == strconv.Itoa(pos) {
-					delete(validWords, validWord)
+					delete(validWords, wordToCheck)
 					break
 				}
 			}
+		}
+	}
+}
+
+func findGoodWord() (string, int) {
+	goodFit := ""
+	goodFitScore := -1
+	currentScore := 0
+	for validWord := range validWords {
+		currentScore = 0
+		for pos, wordLetter := range validWord {
 			// Estimate a score per word
 			if len(lettersRules[string(wordLetter)]) > 0 {
 				if lettersRules[string(wordLetter)] == strconv.Itoa(pos) {
