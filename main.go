@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 var NotExists = 'b'
@@ -18,6 +19,7 @@ var AvailableWords []string
 var OpenerWord string
 var TotalTries = 6
 var ShowInfo bool
+var letterOccurrence map[string]int
 
 func init() {
 	dictionaryFilePath := flag.String("dictionary", "", "The source file to read the available dictionary.")
@@ -52,10 +54,10 @@ func init() {
 	AvailableWords = []string{}
 	for scanner.Scan() {
 		if WordsLength == 0 {
-			WordsLength = len(scanner.Text())
+			WordsLength = utf8.RuneCountInString(scanner.Text())
 		}
-		if len(scanner.Text()) == WordsLength {
-			AvailableWords = append(AvailableWords, scanner.Text())
+		if utf8.RuneCountInString(scanner.Text()) == WordsLength {
+			AvailableWords = append(AvailableWords, strings.ToUpper(scanner.Text()))
 		}
 	}
 	if len(AvailableWords) == 0 {
@@ -80,10 +82,11 @@ func main() {
 		validWords[word] = true
 	}
 	lettersRules = make(map[string]string)
-	var alphabet = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z"
-	for _, letter := range strings.Split(alphabet, ",") {
+
+	for letter := range letterOccurrence {
 		lettersRules[letter] = ""
 	}
+
 	currentWord := OpenerWord
 	currentWordScore := 0
 	for try := 0; try < TotalTries; try++ {
@@ -98,25 +101,27 @@ func main() {
 			response = readResponse()
 		}
 		totalCorrectLetters := 0
-		for k, responseVal := range response {
-			switch responseVal {
+		index := 0
+		for _, currentLetter := range currentWord {
+			switch int32(response[index]) {
 			case NotExists:
-				if len(lettersRules[string(currentWord[k])]) == 0 {
-					lettersRules[string(currentWord[k])] = string(NotExists)
+				if len(lettersRules[string(currentLetter)]) == 0 {
+					lettersRules[string(currentLetter)] = string(NotExists)
 				}
 			case Exists:
-				if len(lettersRules[string(currentWord[k])]) == 0 {
-					lettersRules[string(currentWord[k])] = string(Exists) + strconv.Itoa(k)
+				if len(lettersRules[string(currentLetter)]) == 0 {
+					lettersRules[string(currentLetter)] = string(Exists) + strconv.Itoa(index)
 				}
 			case Correct:
 				totalCorrectLetters++
-				if len(lettersRules[string(currentWord[k])]) == 0 || lettersRules[string(currentWord[k])] == string(
-					Exists) {
-					lettersRules[string(currentWord[k])] = strconv.Itoa(k)
+				if len(lettersRules[string(currentLetter)]) == 0 ||
+					strings.HasPrefix(lettersRules[string(currentLetter)], string(Exists)) {
+					lettersRules[string(currentLetter)] = strconv.Itoa(index)
 				} else {
-					lettersRules[string(currentWord[k])] = lettersRules[string(currentWord[k])] + "|" + strconv.Itoa(k)
+					lettersRules[string(currentLetter)] = lettersRules[string(currentLetter)] + "|" + strconv.Itoa(index)
 				}
 			}
+			index++
 		}
 		if totalCorrectLetters == WordsLength {
 			fmt.Println("Hooray! :-)")
@@ -133,6 +138,7 @@ func main() {
 			os.Exit(0)
 		}
 		currentWord, currentWordScore = findGoodWord()
+		delete(validWords, currentWord)
 	}
 	fmt.Println("No solution found.")
 	fmt.Println("Sorry. :-(")
@@ -149,7 +155,9 @@ func readResponse() string {
 // in the lettersRules map
 func removeWords() {
 	for wordToCheck := range validWords {
-		for pos, wordLetter := range wordToCheck {
+		idx := -1
+		for _, wordLetter := range wordToCheck {
+			idx++
 			// Exclude words that contain letters that don't exist (black)
 			if lettersRules[string(wordLetter)] == string(NotExists) {
 				delete(validWords, wordToCheck)
@@ -158,7 +166,7 @@ func removeWords() {
 			// Exclude words that contain letters that are in wrong place (yellow)
 			if strings.Contains(lettersRules[string(wordLetter)], string(Exists)) {
 				position := lettersRules[string(wordLetter)][1:]
-				if position == strconv.Itoa(pos) {
+				if position == strconv.Itoa(idx) {
 					delete(validWords, wordToCheck)
 					break
 				}
@@ -173,7 +181,8 @@ func findGoodWord() (string, int) {
 	currentScore := 0
 	for validWord := range validWords {
 		currentScore = 0
-		for pos, wordLetter := range validWord {
+		pos := 0
+		for _, wordLetter := range validWord {
 			// Estimate a score per word
 			if len(lettersRules[string(wordLetter)]) > 0 {
 				if lettersRules[string(wordLetter)] == strconv.Itoa(pos) {
@@ -189,6 +198,7 @@ func findGoodWord() (string, int) {
 					currentScore++
 				}
 			}
+			pos++
 		}
 		if currentScore > goodFitScore {
 			goodFit = validWord
@@ -206,7 +216,6 @@ func isValidResponse(response string) bool {
 	}
 	for _, val := range response {
 		if val != NotExists && val != Exists && val != Correct {
-			fmt.Println(val)
 			return false
 		}
 	}

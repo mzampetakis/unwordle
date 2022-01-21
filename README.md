@@ -49,17 +49,17 @@ Apart from the `dictionary` parameter, unwordle can be executed with two optiona
 
 ### Solving a wordle
 
-In order to solve a wordle puzzle as soon as we execute the unworlde we will get a proposal for the first word to use.
-The first word is estimated based on the given dictionary. More on this process can be found at the  
+In order to solve a wordle puzzle as soon as unworlde starts a proposal will be given for the first word to use. The
+first word (opener) is estimated based on the given dictionary. More on this process can be found at the  
 `Unwordle Internals` chapter. The first proposal is like this:
 
 ```
 Try #1: 		arose
 ```
 
-As first try we will use the word `arose`. 1/2499 is the possibility to success as our dictionary contains 2499
-different words. The `unworlde` awits for our input based on the results of the puzzle. We have to enter a string with
-the same length as the wordle's length with letters `b`, `y` and `g`. These letters mean:
+As first try, the word `arose` is proposed to be used. The `unworlde` awaits for user input based on the results of the
+puzzle. A string with the same length as the wordle's length indicating the presence of each letter should be given by
+user. Letters accepted are `b`, `y` and `g`. These letters mean:
 
 * b (black): the letter does not exist in the wordle
 * y (yellow): the letter exists in the wordle but not at the given place
@@ -70,8 +70,8 @@ Try #1: 	    	arose
 Response (b|y|g): 	gbybb
 ```
 
-The process continues until all tries are exhausted, a reply all of `g`s is given, only one possible word matches our
-criteria.
+The process continues until all tries are exhausted or a reply all of `g`s is given or only one possible word matches
+our criteria.
 
 ```
 Found Solution: 	thick
@@ -91,9 +91,12 @@ If we choose to display info for each try we get this output:
 Try #3: 	dodge | Possibility: 1/125 | Score: 20
 ```
 
+`1/125` is the possibility to success as unwordle has excluded all other words from the given dictionary. The way that
+score is calculated is analyzed at the `Eliminating candidates` chapter.
+
 # Unwordle Internals
 
-## Estimatin a good opener
+## Estimating a good opener
 
 Unworlde is able to estimate a good opener word (the first proposed word) instead os using a random one from the given
 dictionary. The process of estimating a good opener goes as follows:
@@ -113,8 +116,8 @@ valuable information for each one of the letters of the proposed word. So
 * for each letter that exists on the wordle but is placed on wrong place (yellow), unwordle eliminates all dictionary's
   words that contain this letter at ths specific place
 
-Doing this process for each input result given, unworlde manages to exclude as many words as possible from the given
-dictionary.
+So, the maximum score a wolde can achieve is 5 * wordsLength. Doing this process for each input result given, unworlde
+manages to exclude as many words as possible from the given dictionary.
 
 ## Proposing a good solution
 
@@ -124,3 +127,9 @@ is calculated using only the given responses.
 
 * score is incremented by 1 for each letter that exists both in the word and the wordle
 * score is incremented by 5 for each letter that exists both in the word and the wordle in the exact place
+
+## Supporting Unicode
+
+In order to support unicode letters within a dictionary unwordle has to iterate over words with caution. Words' letters
+cannot be accessed using indexes, so iterations over each word are used in order to get each single letter. Unicode is
+necessary to support languages/dictionaries that use letters outside unicode characters.

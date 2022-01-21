@@ -7,13 +7,13 @@ import (
 // findGoodOpener calculates the occurrence of each letter within the AvailableWords array
 // and using the most occurred letters finds a word that contains most of those letters.
 func findGoodOpener() string {
-	letterOccurrence := make(map[rune]int)
+	letterOccurrence = make(map[string]int)
 	for _, availableWord := range AvailableWords {
 		for _, letter := range availableWord {
-			if _, ok := letterOccurrence[letter]; ok {
-				letterOccurrence[letter]++
+			if _, ok := letterOccurrence[string(letter)]; ok {
+				letterOccurrence[string(letter)]++
 			} else {
-				letterOccurrence[letter] = 1
+				letterOccurrence[string(letter)] = 1
 			}
 		}
 	}
@@ -21,13 +21,13 @@ func findGoodOpener() string {
 
 	i := 0
 	for k, v := range letterOccurrence {
-		letterOccurrenceSorted[i] = Pair{k, v}
+		letterOccurrenceSorted[i] = Pair{string(k), v}
 		i++
 	}
 	sort.Sort(letterOccurrenceSorted)
-	mostOccurredLetters := make(map[rune]bool)
+	mostOccurredLetters := make(map[string]bool)
 	for i := 0; i < WordsLength; i++ {
-		mostOccurredLetters[letterOccurrenceSorted[len(letterOccurrenceSorted)-i-1].Key] = true
+		mostOccurredLetters[string(letterOccurrenceSorted[len(letterOccurrenceSorted)-i-1].Key)] = true
 	}
 	promisingWord := ""
 	promisingWordScore := 0
@@ -37,8 +37,8 @@ func findGoodOpener() string {
 			mostOccurredLetters[k] = true
 		}
 		for _, letter := range availableWord {
-			if val, ok := mostOccurredLetters[letter]; ok && val {
-				mostOccurredLetters[letter] = false
+			if val, ok := mostOccurredLetters[string(letter)]; ok && val {
+				mostOccurredLetters[string(letter)] = false
 				letterExistence++
 			}
 		}
@@ -54,7 +54,7 @@ func findGoodOpener() string {
 }
 
 type Pair struct {
-	Key   rune
+	Key   string
 	Value int
 }
 type PairList []Pair
