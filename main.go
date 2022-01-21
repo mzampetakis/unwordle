@@ -118,7 +118,10 @@ func main() {
 					strings.HasPrefix(lettersRules[string(currentLetter)], string(Exists)) {
 					lettersRules[string(currentLetter)] = strconv.Itoa(index)
 				} else {
-					lettersRules[string(currentLetter)] = lettersRules[string(currentLetter)] + "|" + strconv.Itoa(index)
+					if lettersRules[string(currentLetter)] != strconv.Itoa(index) &&
+						!strings.Contains(lettersRules[string(currentLetter)], strconv.Itoa(index)) {
+						lettersRules[string(currentLetter)] = lettersRules[string(currentLetter)] + "|" + strconv.Itoa(index)
+					}
 				}
 			}
 			index++
