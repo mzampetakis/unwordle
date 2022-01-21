@@ -4,49 +4,55 @@ import (
 	"sort"
 )
 
-// findGoodOpener calculates the occurrence of each letter within the AvailableWords array
-// and using the most occurred letters finds a word that contains most of those letters.
-func findGoodOpener() string {
-	letterOccurrence = make(map[string]int)
-	for _, availableWord := range AvailableWords {
+// findDictionaryLettersOccurrence calculates a map of letters within the dictionary where each letter is accompanied
+// by its occurrence times
+func findDictionaryLettersOccurrence(dictionary []string) map[string]int {
+	dictionaryLetterOccurrence := make(map[string]int)
+	for _, availableWord := range dictionary {
 		for _, letter := range availableWord {
-			if _, ok := letterOccurrence[string(letter)]; ok {
-				letterOccurrence[string(letter)]++
+			if _, ok := dictionaryLetterOccurrence[string(letter)]; ok {
+				dictionaryLetterOccurrence[string(letter)]++
 			} else {
-				letterOccurrence[string(letter)] = 1
+				dictionaryLetterOccurrence[string(letter)] = 1
 			}
 		}
 	}
-	letterOccurrenceSorted := make(PairList, len(letterOccurrence))
+	return dictionaryLetterOccurrence
+}
 
+// findGoodOpener finds a word within the dictionary that contains the most occurred letters given in the
+// dictionaryLetterOccurrence
+func findGoodOpener(wordsLength int, dictionary []string, dictionaryLetterOccurrence map[string]int) string {
+	letterOccurrenceSorted := make(PairList, len(dictionaryLetterOccurrence))
 	i := 0
-	for k, v := range letterOccurrence {
+	for k, v := range dictionaryLetterOccurrence {
 		letterOccurrenceSorted[i] = Pair{string(k), v}
 		i++
 	}
 	sort.Sort(letterOccurrenceSorted)
 	mostOccurredLetters := make(map[string]bool)
-	for i := 0; i < WordsLength; i++ {
-		mostOccurredLetters[string(letterOccurrenceSorted[len(letterOccurrenceSorted)-i-1].Key)] = true
+	for i := 0; i < wordsLength; i++ {
+		mostOccurredLetters[letterOccurrenceSorted[len(letterOccurrenceSorted)-i-1].Key] = true
 	}
 	promisingWord := ""
 	promisingWordScore := 0
-	for _, availableWord := range AvailableWords {
-		letterExistence := 0
+	for _, availableWord := range dictionary {
+		frequentLetterExistence := 0
 		for k := range mostOccurredLetters {
 			mostOccurredLetters[k] = true
 		}
 		for _, letter := range availableWord {
 			if val, ok := mostOccurredLetters[string(letter)]; ok && val {
 				mostOccurredLetters[string(letter)] = false
-				letterExistence++
+				frequentLetterExistence++
 			}
 		}
-		if letterExistence == WordsLength {
+		// if availableWord contains all the most frequent letters
+		if frequentLetterExistence == wordsLength {
 			return availableWord
 		}
-		if letterExistence > promisingWordScore {
-			promisingWordScore = letterExistence
+		if frequentLetterExistence > promisingWordScore {
+			promisingWordScore = frequentLetterExistence
 			promisingWord = availableWord
 		}
 	}

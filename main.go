@@ -74,15 +74,15 @@ var lettersRules map[string]string
 var validWords map[string]bool
 
 func main() {
+	letterOccurrence = findDictionaryLettersOccurrence(AvailableWords)
 	if len(OpenerWord) != WordsLength {
-		OpenerWord = findGoodOpener()
+		OpenerWord = findGoodOpener(WordsLength, AvailableWords, letterOccurrence)
 	}
 	validWords = make(map[string]bool)
 	for _, word := range AvailableWords {
 		validWords[word] = true
 	}
 	lettersRules = make(map[string]string)
-
 	for letter := range letterOccurrence {
 		lettersRules[letter] = ""
 	}
