@@ -152,7 +152,12 @@ func excludeWords() {
 				if len(rule) == 0 {
 					continue
 				}
-				if rule[:1] == string(NotExists) {
+				if rule[:1] == string(NotExists) && !strings.Contains(lettersRules[string(wordLetter)],
+					string(Correct)) && !strings.Contains(lettersRules[string(wordLetter)], string(Exists)) {
+					delete(validWords, wordToCheck)
+					break
+				}
+				if rule[:1] == string(NotExists) && rule[1:] == strconv.Itoa(idx) {
 					delete(validWords, wordToCheck)
 					break
 				}
