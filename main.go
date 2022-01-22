@@ -100,37 +100,19 @@ func main() {
 			fmt.Printf("Response (b|y|g): \t")
 			response = readResponse()
 		}
-		totalCorrectLetters := 0
-		index := 0
-		for _, currentLetter := range currentWord {
-			switch int32(response[index]) {
-			case NotExists:
-				if len(lettersRules[string(currentLetter)]) == 0 {
-					lettersRules[string(currentLetter)] = string(NotExists)
-				}
-			case Exists:
-				if len(lettersRules[string(currentLetter)]) == 0 {
-					lettersRules[string(currentLetter)] = string(Exists) + strconv.Itoa(index)
-				}
-			case Correct:
-				totalCorrectLetters++
-				if len(lettersRules[string(currentLetter)]) == 0 ||
-					strings.HasPrefix(lettersRules[string(currentLetter)], string(Exists)) {
-					lettersRules[string(currentLetter)] = strconv.Itoa(index)
-				} else {
-					if lettersRules[string(currentLetter)] != strconv.Itoa(index) &&
-						!strings.Contains(lettersRules[string(currentLetter)], strconv.Itoa(index)) {
-						lettersRules[string(currentLetter)] = lettersRules[string(currentLetter)] + "|" + strconv.Itoa(index)
-					}
-				}
-			}
-			index++
-		}
-		if totalCorrectLetters == WordsLength {
+		if !strings.Contains(response, string(NotExists)) && !strings.Contains(response, string(Exists)) {
 			fmt.Println("Hooray! :-)")
 			os.Exit(0)
 		}
-		removeWords()
+		index := 0
+		for _, currentLetter := range currentWord {
+			if !strings.Contains(lettersRules[string(currentLetter)],
+				string(response[index])+strconv.Itoa(index)+"|") {
+				lettersRules[string(currentLetter)] += string(response[index]) + strconv.Itoa(index) + "|"
+			}
+			index++
+		}
+		excludeWords()
 		if len(validWords) == 0 {
 			fmt.Println("No solution found with the given criteria.")
 			fmt.Println("Sorry. :-(")
@@ -154,22 +136,28 @@ func readResponse() string {
 	return response
 }
 
-// removeWords checks all the words within the validWords map and remove impossible words base on the rules stored
+// excludeWords checks all the words within the validWords map and remove impossible words base on the rules stored
 // in the lettersRules map
-func removeWords() {
+func excludeWords() {
 	for wordToCheck := range validWords {
 		idx := -1
 		for _, wordLetter := range wordToCheck {
 			idx++
-			// Exclude words that contain letters that don't exist (black)
-			if lettersRules[string(wordLetter)] == string(NotExists) {
-				delete(validWords, wordToCheck)
-				break
+			// letter has no rule
+			if len(lettersRules[string(wordLetter)]) == 0 {
+				continue
 			}
-			// Exclude words that contain letters that are in wrong place (yellow)
-			if strings.Contains(lettersRules[string(wordLetter)], string(Exists)) {
-				position := lettersRules[string(wordLetter)][1:]
-				if position == strconv.Itoa(idx) {
+			// for NotExists(b) response
+			for _, rule := range strings.Split(lettersRules[string(wordLetter)], "|") {
+				if len(rule) == 0 {
+					continue
+				}
+				if rule[:1] == string(NotExists) {
+					delete(validWords, wordToCheck)
+					break
+				}
+				// Exclude words that contain letters that are in wrong place (yellow)
+				if rule[:1] == string(NotExists) && rule[1:] == strconv.Itoa(idx) {
 					delete(validWords, wordToCheck)
 					break
 				}
@@ -187,18 +175,15 @@ func findGoodWord() (string, int) {
 		pos := 0
 		for _, wordLetter := range validWord {
 			// Estimate a score per word
-			if len(lettersRules[string(wordLetter)]) > 0 {
-				if lettersRules[string(wordLetter)] == strconv.Itoa(pos) {
-					currentScore += WordsLength
-				} else if strings.Contains(lettersRules[string(wordLetter)], "|") {
-					positions := strings.Split(lettersRules[string(wordLetter)], "|")
-					for _, position := range positions {
-						if position == strconv.Itoa(pos) {
-							currentScore += WordsLength
-						}
-					}
-				} else {
+			for _, rule := range strings.Split(lettersRules[string(wordLetter)], "|") {
+				if len(rule) == 0 {
+					continue
+				}
+				if rule[:1] == string(Exists) {
 					currentScore++
+				}
+				if rule[:1] == string(Correct) && rule[1:] == strconv.Itoa(pos) {
+					currentScore += WordsLength
 				}
 			}
 			pos++

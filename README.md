@@ -133,3 +133,13 @@ is calculated using only the given responses.
 In order to support unicode letters within a dictionary unwordle has to iterate over words with caution. Words' letters
 cannot be accessed using indexes, so iterations over each word are used in order to get each single letter. Unicode is
 necessary to support languages/dictionaries that use letters outside unicode characters.
+
+# Future Improvements
+
+Provided dictionaries have some limitations. Not all words are available to some `wordle` variations. This can cause
+unwordle not to be able to find the solution. Apart from this, unwordle might propose to use some word that is not
+acceptable by the puzzle game leaving the user unable to move forward.
+
+Rules used to eliminate words from dictionary and also calculate the score can be both enriched. Sophisticated rules can
+be applied such as when we have information about all the letters of a word (green and yellows) to exlude all other
+words.
