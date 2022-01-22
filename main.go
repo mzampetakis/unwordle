@@ -161,6 +161,10 @@ func excludeWords() {
 					delete(validWords, wordToCheck)
 					break
 				}
+				if rule[:1] == string(Exists) && rule[1:] == strconv.Itoa(idx) {
+					delete(validWords, wordToCheck)
+					break
+				}
 				// Exclude words that contain letters that are in wrong place (yellow)
 				if rule[:1] == string(NotExists) && rule[1:] == strconv.Itoa(idx) {
 					delete(validWords, wordToCheck)
