@@ -1,19 +1,23 @@
 # Unrordle
 
-Unrordle is a toy app that tries to solve the `wordle` puzzle. Wordle is a game where use has to guess the WORDLE (a
-word) in 6 tries. Each guess must be a valid 5-letter word. After each guess, the color of the tiles will change to show
-how close your guess was to the word.
+Unrordle is a toy app that tries to solve the [wordle](https://www.powerlanguage.co.uk/wordle/) puzzle and its
+variations. Wordle is a game where use has to guess the WORDLE (a word) in 6 tries. Each guess must be a valid 5-letter
+word. After each guess, the color of the tiles will change to show how close your guess was to the word.
+
+Wordle is a [Constraint satisfaction problem](https://en.wikipedia.org/wiki/Constraint_satisfaction_problem) and the way
+it is solved is using [Constraint propagation](https://en.wikipedia.org/wiki/Constraint_propagation) techniques.
 
 ## Prerequisites
 
-In order to build the app an installed version of Go greater than v1.11 is required.
+In order to build the app an installed version of Go greater than v1.11 with GOMODULES enabled is required.
 
 ## Build the app
 
 Clone this repo
 
 ```console
-git clone https://github.com/mzampetakis/unqordle.git
+git clone https://github.com/mzampetakis/unwordle.git
+cd unwordle
 ```
 
 Build the app
@@ -32,11 +36,12 @@ After a successful build, unwordle can be run by executing:
 
 Where the `dictionary_file_path` is a file that points to the dictionary to use. The app comes with two dictionaries:
 
-* en_5_letters : a dictionary with english words consisted of 5 letters
-* gr_5_letters : a dictionary with greek words consisted of 5 letters
+* en_5_letters : a provided dictionary with english words consisted of 5 letters
+* gr_5_letters : a provided dictionary with greek words consisted of 5 letters
 
-Dictionary is the source where unwordle retrieves words to use and also expects answeres to be one of the contained
-words.
+Dictionary is the source where unwordle retrieves words to use and also expects answers to be one of the contained
+words. Dictionaries contain words with the required length that our puzzle requires as a simple list of words containing
+a single word per line.
 
 ### Parameters
 
@@ -47,7 +52,13 @@ Apart from the `dictionary` parameter, unwordle can be executed with two optiona
 * --info (boolean): show info about each proposed word (possibility based on remaining words and score of the proposed
   word)
 
-### Solving a wordle
+In order to use all of the available parameters we can use the following command:
+
+```console
+./unwordle --dictionary=en_5_letters --info=true --opener=arose
+```
+
+### Solving a puzzle
 
 In order to solve a wordle puzzle as soon as unworlde starts a proposal will be given for the first word to use. The
 first word (opener) is estimated based on the given dictionary. More on this process can be found at the  

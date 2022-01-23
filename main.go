@@ -57,7 +57,8 @@ func init() {
 			WordsLength = utf8.RuneCountInString(scanner.Text())
 		}
 		if utf8.RuneCountInString(scanner.Text()) == WordsLength {
-			AvailableWords = append(AvailableWords, strings.ToUpper(scanner.Text()))
+			newWord := strings.ToUpper(strings.TrimSpace(scanner.Text()))
+			AvailableWords = append(AvailableWords, newWord)
 		}
 	}
 	if len(AvailableWords) == 0 {
