@@ -105,6 +105,9 @@ Try #3: 	dodge | Possibility: 1/125 | Score: 20
 `1/125` is the possibility to success as unwordle has excluded all other words from the given dictionary. The way that
 score is calculated is analyzed at the `Eliminating candidates` chapter.
 
+To make it clear here is a demo:
+![](unwordle.gif)
+
 # Unwordle Internals
 
 ## Estimating a good opener
